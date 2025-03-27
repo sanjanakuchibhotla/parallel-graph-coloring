@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>15-418 Project Proposal - Parallel Graph Coloring Algorithm</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.6;
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .author, .course, .date {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        .project-link {
+            margin: 10px 0;
+        }
+        .page-break {
+            page-break-after: always;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project Proposal</h1>
+    <div class="author">Sanjana Kuchibhotla, Aditri Gupta</div>
+    <div class="course">15-418</div>
+    <div class="date">March 26, 2025</div>
+    
+    <div class="page-break"></div>
+
+    <h2>Parallel Graph Coloring Algorithm</h2>
+    <p><strong>Sanjana Kuchibhotla, Aditri Gupta</strong></p>
+    <div class="project-link">
+        <a href="https://sanjanakuchibhotla.github.io/parallel-graph-coloring/">Link to Project Webpage</a>: https://sanjanakuchibhotla.github.io/parallel-graph-coloring/
+    </div>
+
+    <h2>Summary</h2>
+    <p>We want to implement parallel graph coloring algorithms using both CPU (using OpenMP) and GPU (using CUDA) implementations. We want to explore the challenges in parallelizing graph coloring algorithms, while expanding upon this with techniques like speculative coloring and load balancing. We will first implement a sequential version of the algorithm, then parallelize it with OpenMP, and finally use CUDA to parallelize it, in order to show the differences and tradeoffs between these methods.</p>
+
+    <h2>Background</h2>
+    <p>Graph coloring is a classical NP-hard problem in which each vertex of a graph is assigned a "color" such that no two vertices that share an edge are the same color, while also minimizing the total number of colors used, This problem has numerous applications including scheduling for bandwidth allocation, assigning aircrafts to flights, register allocation for compiler optimization, and most importantly, solving sudoku puzzles.</p>
+    <p>The sequential algorithm for graph coloring typically follows a greedy approach where for each vertex v in the graph, you must examine all the neighbors of v and identify their colors and then assign the least used available color to v that is not used by any neighbor.</p>
+    <p>Parallelizing graph coloring presents challenges that are potentially interesting due to race conditions that could result from processing adjacent vertices concurrently. Several parallel algorithms for approaching this problem have been proposed including:</p>
+    <ul>
+        <li>Jones-Plassmann algorithm</li>
+        <li>Luby's algorithm</li>
+        <li>Gebremedhin-Manne algorithm</li>
+    </ul>
+    <p>These algorithms employ different strategies such as independent set identification, randomization, and conflict resolution to enable parallelism while maintaining correctness. There will also be high synchronization overhead. Constant synchronization may be needed to maintain correctness which in turn limits scalability</p>
+
+    <h2>The Challenge</h2>
+    <p>There are many challenges in this problem, as the graph coloring problem is not necessarily trivially parallelizable. Conflict resolution especially is necessary, since if two vertices next to each other are updated in parallel and colored the same, there might need to be an extra step to ensure this does not happen. In addition, the structure of graphs is not easily balanced across threads and processors, and since the problem is not easily divided up, load imbalance can become an issue. There is also the possibility of exploring methods like speculative coloring, where vertices will be optimistically colored, and then conflicts will be fixed later.</p>
+    <p>With CUDA, there is possibility for divergent execution as well, since vertices in the graph have different degrees and high degree vertices have the potential to cause load imbalance. In addition, implementing synchronization across blocks is not as simple, since the problem isn't necessarily suited for this.</p>
+
+    <h2>Resources</h2>
+    <h3>Reference papers and articles:</h3>
+    <ul>
+        <li><a href="https://www.researchgate.net/publication/222564375_A_framework_for_scalable_greedy_coloring_on_distributed-memory_parallel_computers">"A Framework for Scalable Hybrid Parallel Graph Coloring" by Deveci et al.</a></li>
+        <li><a href="https://www.osti.gov/servlets/purl/1344720">"Parallel Graph Coloring for Manycore Architectures" by Rokos et al.</a></li>
+        <li><a href="https://developer.nvidia.com/blog/graph-coloring-more-parallelism-for-incomplete-lu-factorization/#:~:text=A%20Parallel%20Algorithm%20for%20Graph%20Coloring&text=assign%20a%20random%20number%20to,added%20to%20the%20independent%20set.">Graph Coloring: More Parallelism for Incomplete-LU Factorization by Maxim Naumov</a></li>
+    </ul>
+    
+    <h3>Hardware</h3>
+    <p>We will use the GHC machines as well as the PSC machines to evaluate our code with higher thread counts. We will use the NVIDIA RTX 2080 which is installed on the gates machines for our CUDA implementation.</p>
+    
+    <h2>Goals and Deliverables</h2>
+    <ul>
+        <li><strong>Plan to Achieve:</strong> Implement a sequential graph coloring algorithm in C++, implement a parallel OpenMP based version, and implement a CUDA-based version. Evaluate correctness and performance on real-world example.</li>
+        <li><strong>Hope to Achieve:</strong> 
+        Optimize the CUDA implementation, and Run large-scale tests using real-world data and evaluate performance scaling.</li>
+        <li><strong>In case work is slow</strong>: Focus on OpenMP implementation with strong optimizations and heuristics.</li>
+    </ul>
+    
+    <h2>Platform Choice</h2>
+    <p>We will be using both OpenMP and CUDA for our solution. OpenMP is a good choice, as it is meant to handle dynamic workloads using multicore CPUs. As the graph coloring problem has a lot of potential to have workload imbalance, OpenMP is a good tool to implement this solution, as it offers control over thread scheduling and also uses shared memory. The choice to use CUDA is to involve extra exploration in order to see how this problem would run on a GPU and what kinds of performance challenges we would run into. As the implementation of the algorithm using OpenMP is much different from the GPU implementation using CUDA, we want to explore the differences in each solution, and compare the tradeoffs between the approaches and the challenges they both have.</p>
+
+    <h2>Schedule</h2>
+    <div class="table-container">
+        <table>
+            <tr>
+                <th>Week</th>
+                <th>Goals</th>
+            </tr>
+            <tr>
+                <td>Week 1</td>
+                <td>Implement baseline sequential solution for graph coloring algorithm.</td>
+            </tr>
+            <tr>
+                <td>Week 2</td>
+                <td>Start implementing initial OpenMP solution.</td>
+            </tr>
+            <tr>
+                <td>Week 3</td>
+                <td>Finish and optimize OpenMP implementation and start CUDA implementation.</td>
+            </tr>
+            <tr>
+                <td>Milestone (April 15)</td>
+                <td>Working OpenMP solution, basic CUDA implementation.</td>
+            </tr>
+            <tr>
+                <td>Week 4</td>
+                <td>Finish and optimize CUDA solution.</td>
+            </tr>
+            <tr>
+                <td>Week 5</td>
+                <td>Compare OpenMP and CUDA solutions, run benchmark numbers, and get analysis and report done.</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

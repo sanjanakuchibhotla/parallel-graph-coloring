@@ -38,7 +38,7 @@ void jones_plassmann(Graph& graph) {
             }
         }
 
-        // color the vertices
+        // color the vertices (regular greedy coloring)
         for (int u = 0; u < graph.size(); u++) {
             if (uncolored[u]) {
                 std::set<int> nbor_colors;

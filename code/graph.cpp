@@ -35,22 +35,6 @@ bool Graph::check_coloring() {
 }
 
 void Graph::assign_priorities() {
-
-// Alternative function
-    // for (int i=0; i<V; i++){
-    //     priorities[i] = i
-    // }
-
-    // for (int i=V-1; i>0;i--){
-    //     int j = rand() % (i+1);
-    //     std::swap(priorities[i], priorities[j]);
-
-    // }
-
-    // for (int i = 0; i < V; ++i) {
-    //     printf("Priority for vertex %d: %d\n", i, priorities[i]);
-    // }
-
     std::set<int> used_priorities;
     for (int u = 0; u < V; u++) {
         int rand_n = rand();

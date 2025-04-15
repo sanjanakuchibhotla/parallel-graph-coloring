@@ -4,6 +4,8 @@
 // #include <omp.h>
 #include <set>
 #include <stdio.h>
+#include <chrono>
+#include <iostream>
 
 // Graph::Graph(int vertices): V(vertices), E(0), adj_list(vertices), colors(vertices, -1) {}
 
@@ -21,6 +23,7 @@ void jones_plassmann(Graph& graph) {
         // get all vertices to color
         std::vector<bool> uncolored;
         uncolored.resize(N, false);
+        // #pragma omp parallel for schedule(dynamic)
         for (int u = 0; u < N; u++) {
             if (colors[u] == -1) {
                 bool flag = true; // flag for if the vertex is local max
@@ -39,6 +42,8 @@ void jones_plassmann(Graph& graph) {
         }
 
         // color the vertices
+        // #pragma omp parallel for schedule(dynamic)
+
         for (int u = 0; u < graph.size(); u++) {
             if (uncolored[u]) {
                 std::set<int> nbor_colors;
@@ -56,6 +61,7 @@ void jones_plassmann(Graph& graph) {
                     color++;
                 }
                 colors[u] = color;
+                // #pragma omp atomic write
                 colored_vertex = true;
             }
         }

@@ -24,7 +24,7 @@ std::vector<int>& Graph::get_priorities() {
 bool Graph::check_coloring() {
     for (int u = 0; u < V; u++) {
         std::vector<int>& neighbors = adj_list[u];
-        for (int i = 0; i < neighbors.size(); i++) {
+        for (int i = 0; i < (int)neighbors.size(); i++) {
             int v = neighbors[i];
             if (colors[u] == colors[v]) {
                 return false;

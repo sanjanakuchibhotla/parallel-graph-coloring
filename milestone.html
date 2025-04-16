@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>15-418 Project Milestone (Parallel Graph Coloring Algorithm)</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.6;
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .author, .course, .date {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .project-link {
+            margin: 10px 0;
+        }
+        ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Project Milestone</h1>
+    <div class="author">Sanjana Kuchibhotla, Aditri Gupta</div>
+    <div class="course">15-418</div>
+    <div class="date">April 15, 2025</div>
+
+    <h2>Parallel Graph Coloring Algorithm</h2>
+    <p><strong>Sanjana Kuchibhotla, Aditri Gupta</strong></p>
+    <div class="project-link">
+        <a href="https://sanjanakuchibhotla.github.io/parallel-graph-coloring/">Link to Project Webpage</a>: https://sanjanakuchibhotla.github.io/parallel-graph-coloring/
+    </div>
+
+    <h2>Progress So Far</h2>
+    <p>Over the past few weeks, we have made some initial progress on our project but are admittedly behind schedule relative to our original proposal. We have implemented the sequential greedy graph coloring algorithm and spent time getting used to working with OpenMP and CUDA programming models for graphs. We realized that in our original proposal we only mentioned working with only one parallel graph algorithm and have come to realize why this is not sufficient for the project.</p>
+
+    <p>We spent time researching a host of different parallel algorithms we are hoping to implement using OpenMP within the coming weeks. We have also implemented Jones-Plassmann and parallelized it with OpenMP but are still working on experimenting different graphs that parallelization might help with and not help with, and are looking at tradeoffs within this in order to see how we can improve the parallelization of the algorithm.</p>
+
+    <p>We also want to work on parallelizing different algorithms for the sequential greedy version, and include things like speculative coloring and conflict resolution and see how this compares to the parallel versions of algorithms we have already implemented.</p>
+
+    <h2>Week Goals</h2>
+    <ul>
+        <li><strong>April 15 - 19:</strong> Finish parallelizing Jones-Plassmann and work on experiments (Aditri)</li>
+        <li>Work on speculative coloring + conflict resolution parallelization method (Sanjana)</li>
+        <li><strong>April 20 - 23:</strong> Work on CUDA solution (Aditri, Sanjana)</li>
+        <li><strong>April 24 - 28:</strong> Work on Writeup + Testing. Finish Poster (Aditri, Sanjana)</li>
+    </ul>
+
+    <h2>Future Timeline</h2>
+    <p>We are slightly behind the original goals outlined in the proposal, but we believe we are still on track to meet the essential deliverables. We have implemented a sequential baseline and one OpenMP algorithm (Jones-Plassmann), and will soon implement the CUDA version.</p>
+    <p>Some "nice-to-haves" like speculative coloring and additional algorithms (e.g., parallelized greedy) may need to be condensed depending on timing, but we aim to include at least one variant with conflict resolution.</p>
+
+    <p>Our revised list of goals for the poster session is:</p>
+    <ul>
+        <li>Fully working sequential and OpenMP versions of at least two algorithms</li>
+        <li>CUDA implementation of one graph coloring algorithm (most likely JP)</li>
+        <li>Performance benchmarks across graph sizes and densities</li>
+        <li>Thorough test suite for testing correctness and benchmarking performance on our generated graphs</li>
+        <li>Comparative analysis of CPU and GPU performance</li>
+        <li>Visual demonstration or summary of speculative coloring and resolution</li>
+    </ul>
+
+    <h2>Preliminary Results</h2>
+    <p>Preliminary results from our OpenMP implementation show a small but measurable improvement in performance. On a graph with 10,000 vertices and approximately 50,000 edges, the sequential algorithm completes in 0.098 seconds, while the OpenMP version (with 8 threads) finishes in 0.087 seconds. The speedup observed is quite modest but leads us to believe we are on the right track with correctness and our initial approach.</p>
+
+    <h2>Poster Session</h2>
+    <p>For the poster session, we plan to present a side-by-side comparison of our sequential, OpenMP, and CUDA implementations. This will include performance graphs showing runtime and scaling behavior and maybe visualizations of the coloring results. If time allows, we will also highlight speculative coloring results and explain how conflicts are resolved after the fact.</p>
+
+    <h2>Concerns</h2>
+    <ul>
+        <li>CUDA implementation challenges. Especially regarding memory access patterns and efficient parallelism for irregular workloads like graphs</li>
+        <li>Designing effective speculative coloring strategies and integrating conflict resolution</li>
+    </ul>
+    <p>Despite being slightly behind, we are confident that with focused effort we can meet our core goals and present strong results at the poster session.</p>
+</body>
+</html>

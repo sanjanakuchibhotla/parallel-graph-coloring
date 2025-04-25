@@ -13,6 +13,7 @@ public:
     std::vector<int>& get_neighbors(int u);
     std::vector<int>& get_colors();
     std::vector<int>& get_priorities();
+    int count_colors();
     void assign_priorities();
 
     bool check_coloring();

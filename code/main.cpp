@@ -7,7 +7,9 @@
 #include <vector>
 #include <cstdlib>
 #include <string>
+#include <omp.h>
 
+#include <chrono>
 
 Graph graph_generate(int N, double p) {
     Graph graph(N);
@@ -24,12 +26,12 @@ Graph graph_generate(int N, double p) {
 
 int main(int argc, char* argv[]) {
     int num_vertices = 0;
-    double edge_prob = 0.1;
-    char mode = '\0'; // P or S (parallel or sequential)
+    double edge_prob = 0.01;
+    int num_threads = 1;
     std::string algo;
 
     int opt;
-    while ((opt = getopt(argc, argv, "v:p:m:a:")) != -1) {
+    while ((opt = getopt(argc, argv, "v:p:n:a:")) != -1) {
         switch (opt) {
         case 'v':
             num_vertices = atoi(optarg);
@@ -37,41 +39,50 @@ int main(int argc, char* argv[]) {
         case 'p':
             edge_prob = atof(optarg);
             break;
-        case 'm':
-            mode = *optarg;
+        case 'n':
+            num_threads = atoi(optarg);
             break;
         case 'a':
             algo = optarg;
             break;
         default:
-            std::cerr << "Usage: " << argv[0] << " -v num_vertices [-p edge_prob] -m mode (P or S) -a algorithm\n";
+            std::cerr << "Usage: " << argv[0] << " -v num_vertices [-p edge_prob] -n num_threads -a algorithm\n";
             exit(EXIT_FAILURE);
         }
     }
 
     // Check if required options are provided
-    if (algo.empty() || num_vertices <= 0 || edge_prob < 0 || (mode != 'S' && mode != 'P')) {
-        std::cerr << "Usage: " << argv[0] << " -v num_vertices [-p edge_prob] -m mode (P or S) -a algorithm\n";
+    if (algo.empty() || num_vertices <= 0 || edge_prob < 0 || num_threads <= 0) {
+        std::cerr << "Usage: " << argv[0] << " -v num_vertices [-p edge_prob] -n num_threads -a algorithm\n";
         exit(EXIT_FAILURE);
     }
+    omp_set_num_threads(num_threads);
     Graph graph = graph_generate(num_vertices, edge_prob);
-    if (mode == 'S') {
-        if (algo == "jp") {
-            jones_plassmann(graph);
-        }
-        else if (algo == "greedy") {
-            greedy_color(graph);
-        }
+    double elapsed_time = 0.0;
+    if (algo == "jp") {
+        auto start_time = std::chrono::steady_clock::now();
+        jones_plassmann(graph);
+        auto end_time = std::chrono::steady_clock::now();
+        elapsed_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+    } else if (algo == "greedy") {
+        auto start_time = std::chrono::steady_clock::now();
+        greedy_color(graph);
+        auto end_time = std::chrono::steady_clock::now();
+        elapsed_time = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
+    } else {
+        printf("Please provide a valid algorithm\n");
+        exit(EXIT_FAILURE);
     }
     printf("==========================\n");
     printf("----------OUTPUT----------\n");
     printf("Edge Probability: %f\n", edge_prob);
     graph.print_graph();
-    printf("Mode (P/S): %c\n", mode);
+    printf("Num threads: %d\n", num_threads);
     printf("Algorithm: %s\n", algo.c_str());
     bool correct = graph.check_coloring();
     printf("Valid Coloring: %s\n", correct ? "Yes" : "No");
+    printf("Execution time (sec): %.6f\n", elapsed_time);
+    printf("Number of Colors: %d\n", graph.count_colors());
     printf("--------------------------\n");
     printf("==========================\n");
-    return 0;
 }

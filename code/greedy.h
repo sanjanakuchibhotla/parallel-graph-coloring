@@ -1,5 +1,5 @@
-#ifndef SEQUENTIAL_H
-#define SEQUENTIAL_H
+#ifndef GREEDY_H
+#define GREEDY_H
 
 #include "graph.h"
 

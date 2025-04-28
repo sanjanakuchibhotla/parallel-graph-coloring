@@ -1,6 +1,10 @@
 #include "graph.h"
+#include <omp.h>
 #include <set>
 
+
+// SEQUENTIAL ALGORITHM (GREEDY GRAPH COLORING)
+// this is our baseline that we compare our parallel algorithms to
 /* 
 greedy approach colors each vertex with the minimum possible color that no
 neighbor vertex has used yet

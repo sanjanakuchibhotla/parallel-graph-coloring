@@ -1,5 +1,9 @@
 #include "graph.h"
 #include <set>
+#include <algorithm>
+#include <numeric>
+#include <random>
+#include <chrono>
 
 Graph::Graph(int vertices): V(vertices), E(0), adj_list(vertices), colors(vertices, -1), priorities(vertices, -1) {}
 
@@ -34,16 +38,17 @@ bool Graph::check_coloring() {
     return true;
 }
 
+void Graph::reset_colors() {
+    std::fill(colors.begin(), colors.end(), -1);
+}
+
 void Graph::assign_priorities() {
-    std::set<int> used_priorities;
+    std::vector<int> shuffled_priorities(V);
+    std::iota(shuffled_priorities.begin(), shuffled_priorities.end(), 0);
+    std::mt19937_64 rng(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    std::shuffle(shuffled_priorities.begin(), shuffled_priorities.end(), rng);
     for (int u = 0; u < V; u++) {
-        int rand_n = rand();
-        while (used_priorities.count(rand_n) > 0) {
-            rand_n = rand();
-        }
-        used_priorities.insert(rand_n);
-        priorities[u] = rand_n;
-        // printf("rand number generated: %d\n", rand_n);
+        priorities[u] = shuffled_priorities[u];
     }
 }
 

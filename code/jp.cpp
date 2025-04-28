@@ -6,61 +6,125 @@
 #include <stdio.h>
 #include <chrono>
 #include <iostream>
+#include <vector>
+#include <numeric>
+#include <random>
+#include <algorithm>
 
+//     // every uncolored vertex checks all neighbors and if it has highest priority, color vertex w min color, mark vertex as colored
+//     // while ()
 // Graph::Graph(int vertices): V(vertices), E(0), adj_list(vertices), colors(vertices, -1) {}
-void jones_plassmann(Graph& graph) {
-     // randomly assign unique priority/weight to each vertex
+// sequential jp
+void jones_plassmann_sequential(Graph& graph) {
+    // randomly assign unique priority/weight to each vertex
     int N = graph.size();
     graph.assign_priorities();
     std::vector<int>& colors = graph.get_colors();
     std::vector<int>& priorities = graph.get_priorities();
 
-    std::vector<std::vector<int>> neighbors(N);
-    #pragma omp parallel for
-    for (int i = 0; i < N; ++i) {
-        neighbors[i] = graph.get_neighbors(i);
-    }
-
     bool colored_vertex = true;
     while (colored_vertex) {
         colored_vertex = false;
-
-        std::vector<bool> vertices_to_color(N, false);
-
-        #pragma omp parallel for schedule(static)
-        for (int u = 0; u < N; ++u) {
+        // get all vertices to color
+        std::vector<bool> uncolored;
+        uncolored.resize(N, false);
+        for (int u = 0; u < N; u++) {
             if (colors[u] == -1) {
                 bool flag = true; // flag for if the vertex is local max
-                for (int v : neighbors[u]) {
+                std::vector<int> neighbors = graph.get_neighbors(u);
+                for (int i = 0; i < neighbors.size(); i++) {
+                    int v = neighbors[i];
                     if (colors[v] == -1 && priorities[v] > priorities[u]) {
                         flag = false;
                         break;
                     }
                 }
-                vertices_to_color[u] = flag;
+                if (flag) {
+                    uncolored[u] = true;
+                }
             }
         }
 
-        #pragma omp parallel for schedule(static) reduction(|:colored_vertex)
-        for (int u = 0; u < N; u++) {
-            if (vertices_to_color[u]) {
-                std::vector<bool> nbor_colors(N, false);
-                for (int v : neighbors[u]) {
+        // color the vertices
+        for (int u = 0; u < graph.size(); u++) {
+            if (uncolored[u]) {
+                std::set<int> nbor_colors;
+                std::vector<int> neighbors = graph.get_neighbors(u);
+                for (int i = 0; i < neighbors.size(); i++) {
+                    int v = neighbors[i];
                     if (colors[v] != -1) {
-                        nbor_colors[colors[v]] = true;
+                        nbor_colors.insert(colors[v]);
                     }
                 }
 
                 int color = 0;
-                while (nbor_colors[color]) {
+                
+                while (nbor_colors.count(color) > 0) { // if color is in the set
                     color++;
                 }
-
                 colors[u] = color;
                 colored_vertex = true;
             }
         }
     }
 }
-    // every uncolored vertex checks all neighbors and if it has highest priority, color vertex w min color, mark vertex as colored
-    // while ()
+
+
+void jones_plassmann(Graph& graph) {
+    int N = graph.size();
+    auto& colors = graph.get_colors();
+    graph.assign_priorities();
+    auto& priorities = graph.get_priorities();
+    
+    // loop for coloring
+    while (true) {
+        bool flag = false; // flag for if anything was colored on this iteration
+        #pragma omp parallel
+        {
+            std::vector<char> nbor_colors(N, 0);
+            #pragma omp for schedule(dynamic,64) reduction(|:flag)
+            for (int u = 0; u < N; u++) {
+                if (colors[u] != -1) {
+                    continue;
+                }
+                auto& nbors = graph.get_neighbors(u);
+                bool max_to_color = true;
+                for (int i = 0; i < (int)nbors.size(); i++) {
+                    int v = nbors[i];
+                    // check nbor not higher priority
+                    if (colors[v] == -1 && priorities[v] > priorities[u]) {
+                        max_to_color = false;
+                        break;
+                    }
+                }
+                // if current vertex is not the one to be colored
+                if (!max_to_color) {
+                    continue;
+                }
+                for (int v : nbors) {
+                    // int v = nbors[i];
+                    int v_color = colors[v];
+                    if (v_color > -1) {
+                        nbor_colors[v_color] = 1;
+                    }
+                }
+                int color = 0;
+                while (nbor_colors[color]) {
+                    color++;
+                }
+                colors[u] = color;
+                flag = true;
+                for (int v : nbors) {
+                    int v_color = colors[v];
+                    if (v_color > -1) {
+                        nbor_colors[v_color] = 0;
+                    }
+                }
+            }
+        }
+        
+        if (!flag) {
+            break;
+        }
+    }
+}

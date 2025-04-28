@@ -8,7 +8,7 @@
 #include "graph.h"
 #include "sequential.h"       
 #include "jp.h"           
-// #include "jp_cuda.h"
+#include "jp_cuda.h"
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -58,16 +58,17 @@ void random_graph_generator(int N, double p, vector<int> &adjacency_list, vector
 }
 
 
-// GPU Kernel function that initalizes the graph 
+// GPU Kernel function that initalizes the data structures Jones-plassman uses to color the graph 
 __global__ void initial_jones_plassmann(int N, int* colors_device, bool* uncolored){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < N) {
         colors_device[i] = 0;
-        //vertex i is uncolored
         uncolored[i] = true; 
     }
 }
 
+
+// GPU kernel function that does an iteration of jones-plassman, coloring an maximal independent set of vertices
 __global__ void color_independent_set(int N, int* adjacency_list, int* vertex_offsets, int* priorities, int* colors, bool* uncolored, int* complete) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= N || !uncolored[i]){
@@ -100,7 +101,8 @@ __global__ void color_independent_set(int N, int* adjacency_list, int* vertex_of
     *complete = 1; 
 
 }
-    
+
+// host code that calls the kernel functions
 void cuda_jones_plassmann(int N, int num_threads, int* adjacency_list, int* vertex_offsets, int* priorities, int* colors, bool* uncolored){
     int blockWidth = num_threads;
     dim3 blockDim(blockWidth,1,1);
@@ -110,7 +112,7 @@ void cuda_jones_plassmann(int N, int num_threads, int* adjacency_list, int* vert
 
     int* changed;
     cudaMalloc(&changed, sizeof(int));
-
+    //calls kernel function that colors MIS for each JP iteration until entire graph has been colored
     while(true) {
         int has_changed = 0;
         cudaMemcpy(changed, &has_changed, sizeof(int), cudaMemcpyHostToDevice);
@@ -175,6 +177,8 @@ int main(int argc, char** argv) {
     printf("__________________________________________\n");
     int *adj_list_device, *vertex_offsets_device, *priorities_device, *colors_device; 
     bool* uncolored; 
+
+    // Allocate GPU memory for graph data
     cudaMalloc(&adj_list_device, adjacency_list.size()  * sizeof(int));
     cudaMalloc(&vertex_offsets_device, vertex_offsets.size() * sizeof(int));
     cudaMalloc(&priorities_device, N  * sizeof(int));
@@ -183,7 +187,8 @@ int main(int argc, char** argv) {
 
     cudaMemcpy(adj_list_device, adjacency_list.data(), adjacency_list.size() * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(vertex_offsets_device, vertex_offsets.data(), vertex_offsets.size()  * sizeof(int), cudaMemcpyHostToDevice);
-
+    
+    // Create Graph object for CPU algos
     Graph graph(N); 
     for (int i=0; i<N; i++){
         for (int edge = vertex_offsets[i]; edge<vertex_offsets[i+1]; edge++){
@@ -195,18 +200,20 @@ int main(int argc, char** argv) {
     cudaMemcpy(priorities_device,priorities.data(), N * sizeof(int), cudaMemcpyHostToDevice);
     bool valid_coloring;
     int num_colors_used; 
+
+    // kernel launch params
     int blockWidth = num_threads;
     dim3 blockDim(blockWidth,1,1);
     int gridWidth = (N + blockWidth -1)/(blockWidth);
     dim3 gridDim(gridWidth,1,1); 
-    initial_time= CycleTimer::currentSeconds();
 
+    initial_time= CycleTimer::currentSeconds();
     initial_jones_plassmann<<<gridDim, blockDim>>>(N,colors_device,uncolored);
     cudaDeviceSynchronize();
     cuda_jones_plassmann(N,num_threads, adj_list_device, vertex_offsets_device,priorities_device,colors_device, uncolored);
     final_time = CycleTimer::currentSeconds(); 
-    double GPU_elapsed_time = (final_time-initial_time);;
 
+    double GPU_elapsed_time = (final_time-initial_time);;
     vector<int> GPU_colors(N); 
     cudaMemcpy(GPU_colors.data(),colors_device, N*sizeof(int), cudaMemcpyDeviceToHost); 
     auto &colors = graph.get_colors();

@@ -30,10 +30,21 @@ Graph graph_generate(int N, double p) {
 void mpi_jones_plassmann(Graph& graph, int pid, int nproc) {
 
     int N = graph.size();
-    graph.assign_priorities();
+    if (pid==0){
+        graph.assign_priorities();
+    }
+    std::vector<int> global_pri = graph.get_priorities();
+    MPI_Bcast(global_pri.data(), N, MPI_INT, 0, MPI_COMM_WORLD);
+    // Overwrite local priorities with the broadcasted array
+    auto &priorities = graph.get_priorities();
+    for (int i=0;i<N;i++){
+        priorities[i] = global_pri[i];
+    }
 
-    auto& colors = graph.get_colors();
-    auto& priorities = graph.get_priorities(); 
+    // Initialize colors to -1
+    auto &colors = graph.get_colors();
+    // for (int i = 0; i < N; ++i) colors[i] = -1;
+
 
     int color=1;
     vector<int> colored(N,0);

@@ -4,7 +4,7 @@ To run OpenMP versions:
 ```
 make clean
 make
-./jp_exec -v num_vertices -p edge_probability -n num_threads -a open_mp_algorithm
+./graph_color -v num_vertices -p edge_probability -n num_threads -a open_mp_algorithm
 ```
 
 To run CUDA version:

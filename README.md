@@ -1,6 +1,7 @@
 # parallel-graph-coloring
 
 To run OpenMP versions:
+
 algorithm can be:
 - "greedy" (sequential-only greedy algo)
 - "jp" (Jones-Plassmann)
